@@ -34,6 +34,7 @@ jobs:
           M3U_FILM_URL: ${{ secrets.M3U_FILM_URL }}
           M3U_SERIES_URL: ${{ secrets.M3U_SERIES_URL }}
           EPG_URL: ${{ secrets.EPG_URL }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
 
       - name: Commit and Push Changes
         run: |

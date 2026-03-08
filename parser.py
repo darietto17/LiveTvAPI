@@ -1,7 +1,9 @@
 import os
 import json
 import urllib.request
+import urllib.parse
 import re
+import time
 from datetime import datetime
 import xml.etree.ElementTree as ET
 
@@ -9,6 +11,7 @@ M3U_LIVE_URL = os.environ.get("M3U_LIVE_URL", "")
 M3U_FILM_URL = os.environ.get("M3U_FILM_URL", "")
 M3U_SERIES_URL = os.environ.get("M3U_SERIES_URL", "")
 EPG_URL = os.environ.get("EPG_URL", "")
+TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "")
 
 DATA_DIR = "data"
 
@@ -19,6 +22,82 @@ def download_file(url, filename):
     with urllib.request.urlopen(req) as response, open(filename, 'wb') as out_file:
         data = response.read()
         out_file.write(data)
+
+def optimize_logo(url):
+    if not url: return ""
+    if "wsrv.nl" in url: return url
+    encoded = urllib.parse.quote(url, safe='')
+    return f"https://wsrv.nl/?url={encoded}&w=300&output=webp"
+
+def load_tmdb_cache():
+    cache_path = os.path.join(DATA_DIR, "tmdb_cache.json")
+    if os.path.exists(cache_path):
+        with open(cache_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+def save_tmdb_cache(cache):
+    cache_path = os.path.join(DATA_DIR, "tmdb_cache.json")
+    with open(cache_path, 'w', encoding='utf-8') as f:
+        json.dump(cache, f, ensure_ascii=False)
+
+def enrich_channels_with_tmdb(channels, is_series):
+    cache = load_tmdb_cache()
+    new_adds = 0
+    print(f"Enriching {len(channels)} items with TMDB (is_series={is_series})...")
+    
+    for c in channels:
+        title = c["name"]
+        clean_title = re.sub(r'\(.*?\)|\[.*?\]', '', title)
+        clean_title = re.sub(r'(1080p|720p|4K|FHD|HD|x264|H264|HEVC|ITA|ENG|Multi)', '', clean_title, flags=re.IGNORECASE)
+        clean_title = clean_title.strip()
+        
+        if not clean_title:
+            continue
+            
+        if clean_title in cache:
+            c["tmdb"] = cache[clean_title]
+            continue
+            
+        if not TMDB_API_KEY:
+            continue
+            
+        query = urllib.parse.quote(clean_title)
+        search_type = "tv" if is_series else "movie"
+        url = f"https://api.themoviedb.org/3/search/{search_type}?api_key={TMDB_API_KEY}&query={query}&language=it-IT"
+        
+        try:
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req) as response:
+                dat = json.loads(response.read().decode('utf-8'))
+                
+            res = dat.get("results", [])
+            if res:
+                first = res[0]
+                year = first.get("release_date", "") if not is_series else first.get("first_air_date", "")
+                tmdb_data = {
+                    "overview": first.get("overview", ""),
+                    "rating": first.get("vote_average", 0),
+                    "year": year[:4] if year else "",
+                    "poster": f"https://image.tmdb.org/t/p/w500{first['poster_path']}" if first.get("poster_path") else "",
+                    "backdrop": f"https://image.tmdb.org/t/p/w780{first['backdrop_path']}" if first.get("backdrop_path") else ""
+                }
+                cache[clean_title] = tmdb_data
+                c["tmdb"] = tmdb_data
+            else:
+                cache[clean_title] = None
+                c["tmdb"] = None
+                
+            new_adds += 1
+            if new_adds % 50 == 0:
+                save_tmdb_cache(cache)
+                
+            time.sleep(0.05)
+        except Exception as e:
+            print(f"TMDB Error for {clean_title}: {e}")
+            
+    if new_adds > 0:
+        save_tmdb_cache(cache)
 
 def parse_m3u(filename):
     print(f"Parsing {filename}...")
@@ -59,7 +138,7 @@ def parse_m3u(filename):
                         "name": name,
                         "group": group,
                         "tvg_id": tvg_id,
-                        "logo": logo,
+                        "logo": optimize_logo(logo),
                         "url": url
                     })
                 name, group, tvg_id, logo = "", "", "", ""
@@ -71,7 +150,6 @@ def generate_jsons(channels, subfolder):
     out_dir = os.path.join(DATA_DIR, subfolder)
     os.makedirs(out_dir, exist_ok=True)
     
-    # 1. Get unique ordered groups
     groups = []
     seen = set()
     for c in channels:
@@ -82,7 +160,6 @@ def generate_jsons(channels, subfolder):
     with open(os.path.join(out_dir, "categories.json"), "w", encoding="utf-8") as f:
         json.dump(groups, f, ensure_ascii=False)
         
-    # 2. Split by category
     by_category = {}
     for c in channels:
         by_category.setdefault(c["group"], []).append(c)
@@ -92,8 +169,16 @@ def generate_jsons(channels, subfolder):
         with open(os.path.join(out_dir, f"cat_{safe_name}.json"), "w", encoding="utf-8") as f:
             json.dump(items, f, ensure_ascii=False)
             
-    # 3. Save a combined slim searchable database
-    search_db = [{"n": c["name"], "g": c["group"], "l": c["logo"], "u": c["url"], "t": c["tvg_id"]} for c in channels]
+    # Search DB: ultra light indexing
+    search_db = []
+    for c in channels:
+        item = {"n": c["name"], "g": c["group"], "l": c["logo"], "u": c["url"], "t": c["tvg_id"]}
+        if "tmdb" in c and c["tmdb"]:
+            item["p"] = c["tmdb"].get("poster", "")
+            item["b"] = c["tmdb"].get("backdrop", "")
+            item["r"] = c["tmdb"].get("rating", 0)
+        search_db.append(item)
+        
     with open(os.path.join(out_dir, "channels.json"), "w", encoding="utf-8") as f:
         json.dump(search_db, f, separators=(',', ':'), ensure_ascii=False)
         
@@ -113,10 +198,11 @@ def parse_epg():
     
     context = ET.iterparse(epg_file, events=('end',))
     programs = {}
+    epg_now = {}
     
     now = datetime.utcnow().timestamp()
-    window_start = now - (2 * 3600)  # 2 hours ago
-    window_end = now + (48 * 3600)   # 48 hours ahead
+    window_start = now - (2 * 3600)
+    window_end = now + (48 * 3600)
     
     for event, elem in context:
         if elem.tag == 'programme':
@@ -134,12 +220,16 @@ def parse_epg():
                 start_ts, stop_ts = 0, 0
                 
             if start_ts <= window_end and stop_ts >= window_start:
-                programs.setdefault(channel, []).append({
+                prog = {
                     "title": title,
                     "start": int(start_ts),
                     "stop": int(stop_ts)
-                })
+                }
+                programs.setdefault(channel, []).append(prog)
                 
+                if start_ts <= now and stop_ts >= now:
+                    epg_now[channel] = prog
+                    
             elem.clear()
             
     for channel, schedule in programs.items():
@@ -147,18 +237,26 @@ def parse_epg():
         with open(os.path.join(epg_dir, f"{safe_channel}.json"), "w", encoding="utf-8") as f:
             json.dump(schedule, f, ensure_ascii=False)
             
-    print("EPG chunks generated.")
+    with open(os.path.join(epg_dir, "epg_now.json"), "w", encoding="utf-8") as f:
+        json.dump(epg_now, f, ensure_ascii=False)
+            
+    print("EPG chunks and epg_now.json generated.")
 
 def process_playlist(url, name):
     if url:
         filename = f"{name}.m3u"
         download_file(url, filename)
         channels = parse_m3u(filename)
+        
+        if name in ["film", "series"] and TMDB_API_KEY:
+            enrich_channels_with_tmdb(channels, is_series=(name=="series"))
+            
         generate_jsons(channels, name)
     else:
         print(f"Skipping {name}, no URL provided.")
 
 def main():
+    os.makedirs(DATA_DIR, exist_ok=True)
     if not (M3U_LIVE_URL or M3U_FILM_URL or M3U_SERIES_URL):
         print("ERROR: No M3U URLs provided in GitHub Actions secrets.")
         return
