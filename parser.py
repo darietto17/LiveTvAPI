@@ -16,7 +16,7 @@ TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "")
 DATA_DIR = "data"
 
 def download_file(url, filename):
-    print(f"Downloading {url} to {filename}...")
+    print(f"[*] STEP: Downloading {filename} from {url[:50]}...")
     headers = {'User-Agent': 'Mozilla/5.0'}
     req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req, timeout=15) as response, open(filename, 'wb') as out_file:
@@ -106,9 +106,10 @@ def enrich_channels_with_tmdb(channels, is_series):
             
     if new_adds > 0:
         save_tmdb_cache(cache)
+    print(f"  [OK] TMDB Enrichment complete. New items added: {new_adds}")
 
 def parse_m3u(filename, use_proxy=False):
-    print(f"Parsing {filename}...")
+    print(f"[*] STEP: Parsing {filename} (Proxy={use_proxy})...")
     group_regex = re.compile(r'group-title="([^"]*)"')
     tvg_id_regex = re.compile(r'tvg-id="([^"]*)"')
     logo_regex = re.compile(r'tvg-logo="([^"]*)"')
@@ -156,10 +157,11 @@ def parse_m3u(filename, use_proxy=False):
                     })
                 name, group, tvg_id, logo = "", "", "", ""
                 
+    print(f"  [OK] Found {len(channels)} valid entries in {filename}.")
     return channels
 
 def generate_jsons(channels, subfolder):
-    print(f"Generating JSON blocks for {subfolder}...")
+    print(f"[*] STEP: Generating JSON files for '{subfolder}'...")
     out_dir = os.path.join(DATA_DIR, subfolder)
     os.makedirs(out_dir, exist_ok=True)
     
@@ -181,6 +183,8 @@ def generate_jsons(channels, subfolder):
         safe_name = "".join(x if x.isalnum() else "_" for x in group)
         with open(os.path.join(out_dir, f"cat_{safe_name}.json"), "w", encoding="utf-8") as f:
             json.dump(items, f, ensure_ascii=False)
+    
+    print(f"  ... Created {len(by_category)} category files for {subfolder}.")
             
     # Search DB: ultra light indexing
     search_db = []
@@ -198,7 +202,7 @@ def generate_jsons(channels, subfolder):
     print(f"{subfolder} JSON chunks generated.")
 
 def parse_epg():
-    print("Parsing EPG XMLTV...")
+    print("[*] STEP: Beginning EPG Parsing...")
     if not EPG_URL:
         print("No EPG_URL provided.")
         return
@@ -253,6 +257,7 @@ def parse_epg():
     with open(os.path.join(epg_dir, "epg_now.json"), "w", encoding="utf-8") as f:
         json.dump(epg_now, f, ensure_ascii=False)
             
+    print(f"  [OK] EPG processing finished. {len(epg_now)} channels currently on-air.")
     print("EPG chunks and epg_now.json generated.")
 
 def process_playlist(url, name):
@@ -271,6 +276,8 @@ def process_playlist(url, name):
         print(f"Skipping {name}, no URL provided.")
 
 def main():
+    start_time = time.time()
+    print(f"--- LiveTvAPI Parser Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
     os.makedirs(DATA_DIR, exist_ok=True)
     if not (M3U_LIVE_URL or M3U_FILM_URL or M3U_SERIES_URL):
         print("ERROR: No M3U URLs provided in GitHub Actions secrets.")
@@ -282,6 +289,10 @@ def main():
     
     if EPG_URL:
         parse_epg()
+    
+    end_time = time.time()
+    print(f"\n[COMPLETE] All tasks finished in {end_time - start_time:.2f} seconds.")
+    print(f"Finished at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 if __name__ == "__main__":
     main()
