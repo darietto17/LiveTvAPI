@@ -5,7 +5,9 @@ import re
 from datetime import datetime
 import xml.etree.ElementTree as ET
 
-M3U_URL = os.environ.get("M3U_URL", "")
+M3U_LIVE_URL = os.environ.get("M3U_LIVE_URL", "")
+M3U_FILM_URL = os.environ.get("M3U_FILM_URL", "")
+M3U_SERIES_URL = os.environ.get("M3U_SERIES_URL", "")
 EPG_URL = os.environ.get("EPG_URL", "")
 
 DATA_DIR = "data"
@@ -19,7 +21,7 @@ def download_file(url, filename):
         out_file.write(data)
 
 def parse_m3u(filename):
-    print("Parsing M3U...")
+    print(f"Parsing {filename}...")
     group_regex = re.compile(r'group-title="([^"]*)"')
     tvg_id_regex = re.compile(r'tvg-id="([^"]*)"')
     logo_regex = re.compile(r'tvg-logo="([^"]*)"')
@@ -64,9 +66,10 @@ def parse_m3u(filename):
                 
     return channels
 
-def generate_jsons(channels):
-    print("Generating JSON blocks...")
-    os.makedirs(DATA_DIR, exist_ok=True)
+def generate_jsons(channels, subfolder):
+    print(f"Generating JSON blocks for {subfolder}...")
+    out_dir = os.path.join(DATA_DIR, subfolder)
+    os.makedirs(out_dir, exist_ok=True)
     
     # 1. Get unique ordered groups
     groups = []
@@ -76,7 +79,7 @@ def generate_jsons(channels):
             groups.append(c["group"])
             seen.add(c["group"])
             
-    with open(os.path.join(DATA_DIR, "categories.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, "categories.json"), "w", encoding="utf-8") as f:
         json.dump(groups, f, ensure_ascii=False)
         
     # 2. Split by category
@@ -86,17 +89,15 @@ def generate_jsons(channels):
         
     for group, items in by_category.items():
         safe_name = "".join(x if x.isalnum() else "_" for x in group)
-        # Avoid creating thousands of files if an M3U is very messy, but let's trust it for now
-        with open(os.path.join(DATA_DIR, f"cat_{safe_name}.json"), "w", encoding="utf-8") as f:
+        with open(os.path.join(out_dir, f"cat_{safe_name}.json"), "w", encoding="utf-8") as f:
             json.dump(items, f, ensure_ascii=False)
             
-    # 3. Save a combined slim searchable database (e.g. only name, group, logo to save space)
-    # The app can download this for global instant search
+    # 3. Save a combined slim searchable database
     search_db = [{"n": c["name"], "g": c["group"], "l": c["logo"], "u": c["url"]} for c in channels]
-    with open(os.path.join(DATA_DIR, "search.json"), "w", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, "search.json"), "w", encoding="utf-8") as f:
         json.dump(search_db, f, separators=(',', ':'), ensure_ascii=False)
         
-    print("JSON chunks generated.")
+    print(f"{subfolder} JSON chunks generated.")
 
 def parse_epg():
     print("Parsing EPG XMLTV...")
@@ -110,12 +111,9 @@ def parse_epg():
     epg_dir = os.path.join(DATA_DIR, "epg")
     os.makedirs(epg_dir, exist_ok=True)
     
-    # We use iterative parsing to avoid loading a 200MB XML file into memory
     context = ET.iterparse(epg_file, events=('end',))
-    
     programs = {}
     
-    # Keep only programs within a relevant window
     now = datetime.utcnow().timestamp()
     window_start = now - (2 * 3600)  # 2 hours ago
     window_end = now + (48 * 3600)   # 48 hours ahead
@@ -129,7 +127,6 @@ def parse_epg():
             title_elem = elem.find('title')
             title = title_elem.text if title_elem is not None else ""
             
-            # Format: '20231015120000 +0000'
             try:
                 start_ts = datetime.strptime(start_str.split(' ')[0], '%Y%m%d%H%M%S').timestamp()
                 stop_ts = datetime.strptime(stop_str.split(' ')[0], '%Y%m%d%H%M%S').timestamp()
@@ -143,10 +140,8 @@ def parse_epg():
                     "stop": int(stop_ts)
                 })
                 
-            # Clear memory
             elem.clear()
             
-    # Save each channel's EPG into its own JSON file (e.g. data/epg/Rai1.json)
     for channel, schedule in programs.items():
         safe_channel = "".join(x if x.isalnum() else "_" for x in channel)
         with open(os.path.join(epg_dir, f"{safe_channel}.json"), "w", encoding="utf-8") as f:
@@ -154,14 +149,23 @@ def parse_epg():
             
     print("EPG chunks generated.")
 
+def process_playlist(url, name):
+    if url:
+        filename = f"{name}.m3u"
+        download_file(url, filename)
+        channels = parse_m3u(filename)
+        generate_jsons(channels, name)
+    else:
+        print(f"Skipping {name}, no URL provided.")
+
 def main():
-    if not M3U_URL:
-        print("ERROR: M3U_URL secret is not set in GitHub Actions.")
+    if not (M3U_LIVE_URL or M3U_FILM_URL or M3U_SERIES_URL):
+        print("ERROR: No M3U URLs provided in GitHub Actions secrets.")
         return
         
-    download_file(M3U_URL, "playlist.m3u")
-    channels = parse_m3u("playlist.m3u")
-    generate_jsons(channels)
+    process_playlist(M3U_LIVE_URL, "live")
+    process_playlist(M3U_FILM_URL, "film")
+    process_playlist(M3U_SERIES_URL, "series")
     
     if EPG_URL:
         parse_epg()

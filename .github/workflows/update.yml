@@ -31,7 +31,9 @@ jobs:
       - name: Run Parser Script
         run: python parser.py
         env:
-          M3U_URL: ${{ secrets.M3U_URL }}
+          M3U_LIVE_URL: ${{ secrets.M3U_LIVE_URL }}
+          M3U_FILM_URL: ${{ secrets.M3U_FILM_URL }}
+          M3U_SERIES_URL: ${{ secrets.M3U_SERIES_URL }}
           EPG_URL: ${{ secrets.EPG_URL }}
 
       - name: Commit and Push Changes
