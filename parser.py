@@ -93,8 +93,8 @@ def generate_jsons(channels, subfolder):
             json.dump(items, f, ensure_ascii=False)
             
     # 3. Save a combined slim searchable database
-    search_db = [{"n": c["name"], "g": c["group"], "l": c["logo"], "u": c["url"]} for c in channels]
-    with open(os.path.join(out_dir, "search.json"), "w", encoding="utf-8") as f:
+    search_db = [{"n": c["name"], "g": c["group"], "l": c["logo"], "u": c["url"], "t": c["tvg_id"]} for c in channels]
+    with open(os.path.join(out_dir, "channels.json"), "w", encoding="utf-8") as f:
         json.dump(search_db, f, separators=(',', ':'), ensure_ascii=False)
         
     print(f"{subfolder} JSON chunks generated.")
