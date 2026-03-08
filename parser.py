@@ -99,7 +99,7 @@ def enrich_channels_with_tmdb(channels, is_series):
     if new_adds > 0:
         save_tmdb_cache(cache)
 
-def parse_m3u(filename):
+def parse_m3u(filename, use_proxy=False):
     print(f"Parsing {filename}...")
     group_regex = re.compile(r'group-title="([^"]*)"')
     tvg_id_regex = re.compile(r'tvg-id="([^"]*)"')
@@ -134,12 +134,17 @@ def parse_m3u(filename):
             elif not line.startswith("#"):
                 url = line
                 if url and name:
+                    final_url = url
+                    if use_proxy and "vixsrc.to" not in url:
+                        encoded = urllib.parse.quote(url, safe='')
+                        final_url = f"https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url={encoded}"
+
                     channels.append({
                         "name": name,
                         "group": group,
                         "tvg_id": tvg_id,
                         "logo": optimize_logo(logo),
-                        "url": url
+                        "url": final_url
                     })
                 name, group, tvg_id, logo = "", "", "", ""
                 
@@ -246,7 +251,9 @@ def process_playlist(url, name):
     if url:
         filename = f"{name}.m3u"
         download_file(url, filename)
-        channels = parse_m3u(filename)
+        
+        use_proxy = name in ["film", "series"]
+        channels = parse_m3u(filename, use_proxy=use_proxy)
         
         if name in ["film", "series"] and TMDB_API_KEY:
             enrich_channels_with_tmdb(channels, is_series=(name=="series"))
