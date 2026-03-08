@@ -19,7 +19,7 @@ def download_file(url, filename):
     print(f"Downloading {url} to {filename}...")
     headers = {'User-Agent': 'Mozilla/5.0'}
     req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req) as response, open(filename, 'wb') as out_file:
+    with urllib.request.urlopen(req, timeout=15) as response, open(filename, 'wb') as out_file:
         data = response.read()
         out_file.write(data)
 
@@ -68,7 +68,7 @@ def enrich_channels_with_tmdb(channels, is_series):
         
         try:
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req) as response:
+            with urllib.request.urlopen(req, timeout=10) as response:
                 dat = json.loads(response.read().decode('utf-8'))
                 
             res = dat.get("results", [])
