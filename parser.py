@@ -20,8 +20,15 @@ def download_file(url, filename):
     headers = {'User-Agent': 'Mozilla/5.0'}
     req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req, timeout=15) as response, open(filename, 'wb') as out_file:
-        data = response.read()
-        out_file.write(data)
+        chunk_size = 1024 * 1024
+        downloaded = 0
+        while True:
+            chunk = response.read(chunk_size)
+            if not chunk: break
+            out_file.write(chunk)
+            downloaded += len(chunk)
+            if downloaded % (10 * 1024 * 1024) == 0:
+                print(f"  ... {downloaded // (1024*1024)}MB downloaded")
 
 def optimize_logo(url):
     if not url: return ""
@@ -90,6 +97,7 @@ def enrich_channels_with_tmdb(channels, is_series):
                 
             new_adds += 1
             if new_adds % 50 == 0:
+                print(f"  ... enriched {new_adds} new items.")
                 save_tmdb_cache(cache)
                 
             time.sleep(0.05)
