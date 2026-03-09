@@ -88,9 +88,16 @@ def enrich_channels_with_tmdb(channels, is_series):
     print(f"Enriching {len(channels)} items with TMDB (is_series={is_series}) using Threads...")
     
     to_fetch = [c for c in channels if re.sub(r'\(.*?\)|\[.*?\]', '', c["name"]).strip() not in cache]
+    
+    # Cap TMDB fetches per run to prevent timeout
+    FETCH_LIMIT = 500
+    if len(to_fetch) > FETCH_LIMIT:
+        print(f"  [!] Limiting TMDB fetches to {FETCH_LIMIT} for faster execution.")
+        to_fetch = to_fetch[:FETCH_LIMIT]
+        
     new_adds = 0
 
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=20) as executor:
         futures = {executor.submit(fetch_tmdb_info, c, is_series, cache): c for c in to_fetch}
         for future in as_completed(futures):
             res = future.result()
@@ -251,6 +258,9 @@ def parse_epg():
                     epg_now[channel] = prog
                     
             elem.clear()
+            # Prevent ElementTree from keeping all parsed elements in RAM
+            while elem.getprevious() is not None:
+                del elem.getparent()[0]
             
     for channel, schedule in programs.items():
         safe_channel = "".join(x if x.isalnum() else "_" for x in channel)
