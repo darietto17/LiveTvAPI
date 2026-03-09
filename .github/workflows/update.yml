@@ -43,4 +43,5 @@ jobs:
           git add data/
           # Commit solo se ci sono cambiamenti
           git diff --quiet && git diff --staged --quiet || git commit -m "Auto-update: Aggiornamento Liste e EPG"
+          git pull --rebase origin main
           git push origin main
