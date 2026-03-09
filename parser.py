@@ -1,11 +1,11 @@
 import os
 import json
-import urllib.request
-import urllib.parse
+import requests
 import re
 import time
 from datetime import datetime
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 M3U_LIVE_URL = os.environ.get("M3U_LIVE_URL", "")
 M3U_FILM_URL = os.environ.get("M3U_FILM_URL", "")
@@ -13,27 +13,29 @@ M3U_SERIES_URL = os.environ.get("M3U_SERIES_URL", "")
 EPG_URL = os.environ.get("EPG_URL", "")
 TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "")
 
+# Global session for connection pooling
+session = requests.Session()
+session.headers.update({'User-Agent': 'Mozilla/5.0'})
+
 DATA_DIR = "data"
 
 def download_file(url, filename):
     print(f"[*] STEP: Downloading {filename} from {url[:50]}...")
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=15) as response, open(filename, 'wb') as out_file:
-        chunk_size = 1024 * 1024
-        downloaded = 0
-        while True:
-            chunk = response.read(chunk_size)
-            if not chunk: break
-            out_file.write(chunk)
-            downloaded += len(chunk)
-            if downloaded % (10 * 1024 * 1024) == 0:
-                print(f"  ... {downloaded // (1024*1024)}MB downloaded")
+    with session.get(url, stream=True, timeout=15) as r:
+        r.raise_for_status()
+        with open(filename, 'wb') as f:
+            downloaded = 0
+            for chunk in r.iter_content(chunk_size=1024*1024):
+                if chunk:
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if downloaded % (10 * 1024 * 1024) == 0:
+                        print(f"  ... {downloaded // (1024*1024)}MB downloaded")
 
 def optimize_logo(url):
     if not url: return ""
     if "wsrv.nl" in url: return url
-    encoded = urllib.parse.quote(url, safe='')
+    encoded = requests.utils.quote(url)
     return f"https://wsrv.nl/?url={encoded}&w=300&output=webp"
 
 def load_tmdb_cache():
@@ -48,62 +50,63 @@ def save_tmdb_cache(cache):
     with open(cache_path, 'w', encoding='utf-8') as f:
         json.dump(cache, f, ensure_ascii=False)
 
+def fetch_tmdb_info(c, is_series, cache):
+    title = c["name"]
+    clean_title = re.sub(r'\(.*?\)|\[.*?\]', '', title)
+    clean_title = re.sub(r'(1080p|720p|4K|FHD|HD|x264|H264|HEVC|ITA|ENG|Multi)', '', clean_title, flags=re.IGNORECASE).strip()
+    
+    if not clean_title or not TMDB_API_KEY: return None
+    if clean_title in cache: return cache[clean_title]
+    
+    query = requests.utils.quote(clean_title)
+    search_type = "tv" if is_series else "movie"
+    url = f"https://api.themoviedb.org/3/search/{search_type}?api_key={TMDB_API_KEY}&query={query}&language=it-IT"
+    
+    try:
+        r = session.get(url, timeout=10)
+        dat = r.json()
+        res = dat.get("results", [])
+        if res:
+            first = res[0]
+            year_key = "first_air_date" if is_series else "release_date"
+            year = first.get(year_key, "")
+            tmdb_data = {
+                "overview": first.get("overview", ""),
+                "rating": first.get("vote_average", 0),
+                "year": year[:4] if year else "",
+                "poster": f"https://image.tmdb.org/t/p/w500{first['poster_path']}" if first.get("poster_path") else "",
+                "backdrop": f"https://image.tmdb.org/t/p/w780{first['backdrop_path']}" if first.get("backdrop_path") else ""
+            }
+            return clean_title, tmdb_data
+        return clean_title, None
+    except Exception as e:
+        print(f"TMDB Error for {clean_title}: {e}")
+        return None
+
 def enrich_channels_with_tmdb(channels, is_series):
     cache = load_tmdb_cache()
-    new_adds = 0
-    print(f"Enriching {len(channels)} items with TMDB (is_series={is_series})...")
+    print(f"Enriching {len(channels)} items with TMDB (is_series={is_series}) using Threads...")
     
-    for c in channels:
-        title = c["name"]
-        clean_title = re.sub(r'\(.*?\)|\[.*?\]', '', title)
-        clean_title = re.sub(r'(1080p|720p|4K|FHD|HD|x264|H264|HEVC|ITA|ENG|Multi)', '', clean_title, flags=re.IGNORECASE)
-        clean_title = clean_title.strip()
-        
-        if not clean_title:
-            continue
-            
-        if clean_title in cache:
-            c["tmdb"] = cache[clean_title]
-            continue
-            
-        if not TMDB_API_KEY:
-            continue
-            
-        query = urllib.parse.quote(clean_title)
-        search_type = "tv" if is_series else "movie"
-        url = f"https://api.themoviedb.org/3/search/{search_type}?api_key={TMDB_API_KEY}&query={query}&language=it-IT"
-        
-        try:
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=10) as response:
-                dat = json.loads(response.read().decode('utf-8'))
-                
-            res = dat.get("results", [])
+    to_fetch = [c for c in channels if re.sub(r'\(.*?\)|\[.*?\]', '', c["name"]).strip() not in cache]
+    new_adds = 0
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {executor.submit(fetch_tmdb_info, c, is_series, cache): c for c in to_fetch}
+        for future in as_completed(futures):
+            res = future.result()
             if res:
-                first = res[0]
-                year = first.get("release_date", "") if not is_series else first.get("first_air_date", "")
-                tmdb_data = {
-                    "overview": first.get("overview", ""),
-                    "rating": first.get("vote_average", 0),
-                    "year": year[:4] if year else "",
-                    "poster": f"https://image.tmdb.org/t/p/w500{first['poster_path']}" if first.get("poster_path") else "",
-                    "backdrop": f"https://image.tmdb.org/t/p/w780{first['backdrop_path']}" if first.get("backdrop_path") else ""
-                }
-                cache[clean_title] = tmdb_data
-                c["tmdb"] = tmdb_data
-            else:
-                cache[clean_title] = None
-                c["tmdb"] = None
-                
-            new_adds += 1
-            if new_adds % 50 == 0:
-                print(f"  ... enriched {new_adds} new items.")
-                save_tmdb_cache(cache)
-                
-            time.sleep(0.05)
-        except Exception as e:
-            print(f"TMDB Error for {clean_title}: {e}")
-            
+                title, data = res
+                cache[title] = data
+                new_adds += 1
+                if new_adds % 50 == 0:
+                    print(f"  ... enriched {new_adds} items")
+                    save_tmdb_cache(cache)
+
+    # Assign from cache
+    for c in channels:
+        clean = re.sub(r'\(.*?\)|\[.*?\]', '', c["name"]).strip()
+        c["tmdb"] = cache.get(clean)
+
     if new_adds > 0:
         save_tmdb_cache(cache)
     print(f"  [OK] TMDB Enrichment complete. New items added: {new_adds}")
@@ -145,7 +148,7 @@ def parse_m3u(filename, use_proxy=False):
                 if url and name:
                     final_url = url
                     if use_proxy and "vixsrc.to" not in url:
-                        encoded = urllib.parse.quote(url, safe='')
+                        encoded = requests.utils.quote(url, safe='')
                         final_url = f"https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url={encoded}"
 
                     channels.append({
@@ -277,21 +280,28 @@ def process_playlist(url, name):
 
 def main():
     start_time = time.time()
-    print(f"--- LiveTvAPI Parser Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
+    print(f"--- LiveTvAPI Parallel Parser Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
     os.makedirs(DATA_DIR, exist_ok=True)
-    if not (M3U_LIVE_URL or M3U_FILM_URL or M3U_SERIES_URL):
-        print("ERROR: No M3U URLs provided in GitHub Actions secrets.")
-        return
-        
-    process_playlist(M3U_LIVE_URL, "live")
-    process_playlist(M3U_FILM_URL, "film")
-    process_playlist(M3U_SERIES_URL, "series")
     
-    if EPG_URL:
-        parse_epg()
+    tasks = []
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        if M3U_LIVE_URL:
+            tasks.append(executor.submit(process_playlist, M3U_LIVE_URL, "live"))
+        if M3U_FILM_URL:
+            tasks.append(executor.submit(process_playlist, M3U_FILM_URL, "film"))
+        if M3U_SERIES_URL:
+            tasks.append(executor.submit(process_playlist, M3U_SERIES_URL, "series"))
+        if EPG_URL:
+            tasks.append(executor.submit(parse_epg))
+
+        for future in as_completed(tasks):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"[!] Critical Error in task: {e}")
     
     end_time = time.time()
-    print(f"\n[COMPLETE] All tasks finished in {end_time - start_time:.2f} seconds.")
+    print(f"\n[COMPLETE] All parallel tasks finished in {end_time - start_time:.2f} seconds.")
     print(f"Finished at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 if __name__ == "__main__":
