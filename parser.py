@@ -25,16 +25,21 @@ DATA_DIR = "data"
 
 def download_file(url, filename):
     print(f"[*] STEP: Downloading {filename} from {url[:50]}...")
-    with session.get(url, stream=True, timeout=15) as r:
-        r.raise_for_status()
-        with open(filename, 'wb') as f:
-            downloaded = 0
-            for chunk in r.iter_content(chunk_size=1024*1024):
-                if chunk:
-                    f.write(chunk)
-                    downloaded += len(chunk)
-                    if downloaded % (10 * 1024 * 1024) == 0:
-                        print(f"  ... {downloaded // (1024*1024)}MB downloaded")
+    try:
+        with session.get(url, stream=True, timeout=60) as r:
+            r.raise_for_status()
+            with open(filename, 'wb') as f:
+                downloaded = 0
+                for chunk in r.iter_content(chunk_size=1024*1024):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if downloaded % (10 * 1024 * 1024) == 0:
+                            print(f"  ... {downloaded // (1024*1024)}MB downloaded")
+        print(f"  [OK] Finished downloading {filename}")
+    except Exception as e:
+        print(f"[!] Error downloading {filename}: {e}")
+        raise
 
 def optimize_logo(url):
     if not url: return ""
@@ -318,6 +323,7 @@ def parse_epg():
     print("EPG chunks and epg_now.json generated.")
 
 def process_playlist(url, name):
+    print(f"[*] START Process Playlist: {name}")
     if url:
         filename = f"{name}.m3u"
         download_file(url, filename)
@@ -329,12 +335,20 @@ def process_playlist(url, name):
             enrich_channels_with_tmdb(channels, is_series=(name=="series"))
             
         generate_jsons(channels, name)
+        print(f"[*] END Process Playlist: {name}")
     else:
         print(f"Skipping {name}, no URL provided.")
 
 def main():
     start_time = time.time()
     print(f"--- LiveTvAPI Parallel Parser Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
+    print(f"DATA_DIR: {DATA_DIR}")
+    print(f"M3U_LIVE_URL preset: {'YES' if M3U_LIVE_URL else 'NO'}")
+    print(f"M3U_FILM_URL preset: {'YES' if M3U_FILM_URL else 'NO'}")
+    print(f"M3U_SERIES_URL preset: {'YES' if M3U_SERIES_URL else 'NO'}")
+    print(f"EPG_URL preset: {'YES' if EPG_URL else 'NO'}")
+    print(f"TMDB_API_KEY preset: {'YES' if TMDB_API_KEY else 'NO'}")
+    
     os.makedirs(DATA_DIR, exist_ok=True)
     
     tasks = []
