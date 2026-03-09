@@ -127,46 +127,63 @@ def parse_m3u(filename, use_proxy=False):
     channels = []
     
     with open(filename, 'r', encoding='utf-8') as f:
-        name = ""
-        group = ""
-        tvg_id = ""
-        logo = ""
+        lines = f.readlines()
         
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
+    name = ""
+    group = ""
+    tvg_id = ""
+    logo = ""
+    
+    new_lines = []
+    
+    for line in lines:
+        clean_line = line.strip()
+        if not clean_line:
+            new_lines.append(line)
+            continue
+        
+        if clean_line.startswith("#EXTINF:"):
+            m_group = group_regex.search(clean_line)
+            group = m_group.group(1) if m_group else "Uncategorized"
             
-            if line.startswith("#EXTINF:"):
-                m_group = group_regex.search(line)
-                group = m_group.group(1) if m_group else "Uncategorized"
+            m_id = tvg_id_regex.search(clean_line)
+            tvg_id = m_id.group(1) if m_id else ""
+            
+            m_logo = logo_regex.search(clean_line)
+            logo = m_logo.group(1) if m_logo else ""
+            
+            parts = clean_line.split(",", 1)
+            name = parts[1].strip() if len(parts) > 1 else ""
+            new_lines.append(line)
+            
+        elif not clean_line.startswith("#"):
+            url = clean_line
+            if url and name:
+                final_url = url
+                if use_proxy and "vixsrc.to" not in url:
+                    encoded = requests.utils.quote(url, safe='')
+                    final_url = f"https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url={encoded}"
                 
-                m_id = tvg_id_regex.search(line)
-                tvg_id = m_id.group(1) if m_id else ""
-                
-                m_logo = logo_regex.search(line)
-                logo = m_logo.group(1) if m_logo else ""
-                
-                parts = line.split(",", 1)
-                name = parts[1].strip() if len(parts) > 1 else ""
-                
-            elif not line.startswith("#"):
-                url = line
-                if url and name:
-                    final_url = url
-                    if use_proxy and "vixsrc.to" not in url:
-                        encoded = requests.utils.quote(url, safe='')
-                        final_url = f"https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url={encoded}"
+                # Append the potentially proxied URL instead of the original one
+                new_lines.append(final_url + "\n")
 
-                    channels.append({
-                        "name": name,
-                        "group": group,
-                        "tvg_id": tvg_id,
-                        "logo": optimize_logo(logo),
-                        "url": final_url
-                    })
-                name, group, tvg_id, logo = "", "", "", ""
-                
+                channels.append({
+                    "name": name,
+                    "group": group,
+                    "tvg_id": tvg_id,
+                    "logo": optimize_logo(logo),
+                    "url": final_url
+                })
+            name, group, tvg_id, logo = "", "", "", ""
+        else:
+             # Altri commenti M3U come #EXTM3U
+             new_lines.append(line)
+             
+    # Rewrite the M3U file if we proxied any URLs
+    if use_proxy:
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.writelines(new_lines)
+            
     print(f"  [OK] Found {len(channels)} valid entries in {filename}.")
     return channels
 
@@ -278,7 +295,7 @@ def process_playlist(url, name):
         filename = f"{name}.m3u"
         download_file(url, filename)
         
-        use_proxy = name in ["film", "series"]
+        use_proxy = True # Abilita il proxy per tutti i link, inclusi i canali live
         channels = parse_m3u(filename, use_proxy=use_proxy)
         
         if name in ["film", "series"] and TMDB_API_KEY:
