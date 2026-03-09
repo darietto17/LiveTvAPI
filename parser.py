@@ -160,7 +160,7 @@ def parse_m3u(filename, use_proxy=False):
             url = clean_line
             if url and name:
                 final_url = url
-                if use_proxy and "vixsrc.to" not in url:
+                if use_proxy:
                     encoded = requests.utils.quote(url, safe='')
                     final_url = f"https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url={encoded}"
                 
