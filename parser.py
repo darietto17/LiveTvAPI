@@ -6,6 +6,10 @@ import time
 from datetime import datetime
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+
+# Global lock for thread-safe cache access
+cache_lock = threading.Lock()
 
 M3U_LIVE_URL = os.environ.get("M3U_LIVE_URL", "")
 M3U_FILM_URL = os.environ.get("M3U_FILM_URL", "")
@@ -40,15 +44,24 @@ def optimize_logo(url):
 
 def load_tmdb_cache():
     cache_path = os.path.join(DATA_DIR, "tmdb_cache.json")
-    if os.path.exists(cache_path):
-        with open(cache_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+    with cache_lock:
+        if os.path.exists(cache_path):
+            try:
+                with open(cache_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"[!] Error loading cache: {e}")
+                return {}
     return {}
 
 def save_tmdb_cache(cache):
     cache_path = os.path.join(DATA_DIR, "tmdb_cache.json")
-    with open(cache_path, 'w', encoding='utf-8') as f:
-        json.dump(cache, f, ensure_ascii=False)
+    with cache_lock:
+        try:
+            with open(cache_path, 'w', encoding='utf-8') as f:
+                json.dump(cache, f, ensure_ascii=False)
+        except Exception as e:
+            print(f"[!] Error saving cache: {e}")
 
 def fetch_tmdb_info(c, is_series, cache):
     title = c["name"]
@@ -103,7 +116,8 @@ def enrich_channels_with_tmdb(channels, is_series):
             res = future.result()
             if res:
                 title, data = res
-                cache[title] = data
+                with cache_lock:
+                    cache[title] = data
                 new_adds += 1
                 if new_adds % 50 == 0:
                     print(f"  ... enriched {new_adds} items")
@@ -161,8 +175,12 @@ def parse_m3u(filename, use_proxy=False):
             if url and name:
                 final_url = url
                 if use_proxy:
-                    encoded = requests.utils.quote(url, safe='')
-                    final_url = f"https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url={encoded}"
+                    PROXY_PREFIX = "https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url="
+                    if not url.startswith(PROXY_PREFIX):
+                        encoded = requests.utils.quote(url, safe='')
+                        final_url = f"{PROXY_PREFIX}{encoded}"
+                    else:
+                        final_url = url
                 
                 # Append the potentially proxied URL instead of the original one
                 new_lines.append(final_url + "\n")
@@ -240,7 +258,10 @@ def parse_epg():
     epg_dir = os.path.join(DATA_DIR, "epg")
     os.makedirs(epg_dir, exist_ok=True)
     
-    context = ET.iterparse(epg_file, events=('end',))
+    context = ET.iterparse(epg_file, events=('start', 'end',))
+    # root element to clear children
+    _, root = next(context)
+    
     programs = {}
     epg_now = {}
     
@@ -249,7 +270,7 @@ def parse_epg():
     window_end = now + (48 * 3600)
     
     for event, elem in context:
-        if elem.tag == 'programme':
+        if event == 'end' and elem.tag == 'programme':
             channel = elem.get('channel', '')
             start_str = elem.get('start', '')
             stop_str = elem.get('stop', '')
@@ -273,11 +294,17 @@ def parse_epg():
                 
                 if start_ts <= now and stop_ts >= now:
                     epg_now[channel] = prog
-                    
+            
+            # Memory safety: clear the element after processing
             elem.clear()
-            # Prevent ElementTree from keeping all parsed elements in RAM
-            while elem.getprevious() is not None:
-                del elem.getparent()[0]
+            # Also clear children from the root to prevent memory accumulation
+            root.clear()
+        elif event == 'end':
+            # Clear other elements we don't need (like 'channel', 'displayName' etc) 
+            # as long as they are not the root
+            if elem != root:
+                elem.clear()
+                root.clear()
             
     for channel, schedule in programs.items():
         safe_channel = "".join(x if x.isalnum() else "_" for x in channel)
