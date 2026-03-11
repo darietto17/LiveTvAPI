@@ -21,7 +21,48 @@ TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "")
 session = requests.Session()
 session.headers.update({'User-Agent': 'Mozilla/5.0'})
 
-DATA_DIR = "data"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(SCRIPT_DIR, "data")
+
+def load_rules():
+    rules_path = "user_rules.json"
+    if os.path.exists(rules_path):
+        try:
+            with open(rules_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[!] Error loading user_rules.json: {e}")
+    return {"items": {}, "order": [], "groupsOrder": []}
+
+def apply_rules(channels, rules):
+    # 1. Apply item-level overrides (name, group, logo, hidden)
+    mapped = []
+    items_rules = rules.get("items", {})
+    
+    for ch in channels:
+        orig_name = ch["name"]
+        rule = items_rules.get(orig_name)
+        if rule:
+            if rule.get("hidden"):
+                continue
+            ch["name"] = rule.get("name", ch["name"])
+            ch["group"] = rule.get("group", ch["group"])
+            ch["logo"] = rule.get("logo", ch["logo"])
+            # Note: url override is usually not needed here as links are dynamic, 
+            # but we keep the name matching consistent.
+        mapped.append(ch)
+    
+    # 2. Sort channels based on global 'order' if present
+    order = rules.get("order", [])
+    if order:
+        order_map = {name: i for i, name in enumerate(order)}
+        # We sort by originalName (which is stored in 'name' at this point before override if we want consistency, 
+        # but the rule usually refers to the original name part from M3U).
+        # To be safe, we should have kept 'originalName' in the dict.
+        # Let's adjust parse_m3u to include it.
+        mapped.sort(key=lambda x: order_map.get(x.get("originalName", x["name"]), 999999))
+    
+    return mapped
 
 def download_file(url, filename):
     print(f"[*] STEP: Downloading {filename} from {url[:50]}...")
@@ -73,8 +114,8 @@ def fetch_tmdb_info(c, is_series, cache):
     clean_title = re.sub(r'\(.*?\)|\[.*?\]', '', title)
     clean_title = re.sub(r'(1080p|720p|4K|FHD|HD|x264|H264|HEVC|ITA|ENG|Multi)', '', clean_title, flags=re.IGNORECASE).strip()
     
-    if not clean_title or not TMDB_API_KEY: return None
-    if clean_title in cache: return cache[clean_title]
+    if not clean_title or not TMDB_API_KEY: return None, None
+    if clean_title in cache: return clean_title, cache[clean_title]
     
     query = requests.utils.quote(clean_title)
     search_type = "tv" if is_series else "movie"
@@ -99,7 +140,7 @@ def fetch_tmdb_info(c, is_series, cache):
         return clean_title, None
     except Exception as e:
         print(f"TMDB Error for {clean_title}: {e}")
-        return None
+        return clean_title, None
 
 def enrich_channels_with_tmdb(channels, is_series):
     cache = load_tmdb_cache()
@@ -118,15 +159,19 @@ def enrich_channels_with_tmdb(channels, is_series):
     with ThreadPoolExecutor(max_workers=20) as executor:
         futures = {executor.submit(fetch_tmdb_info, c, is_series, cache): c for c in to_fetch}
         for future in as_completed(futures):
-            res = future.result()
-            if res:
-                title, data = res
-                with cache_lock:
-                    cache[title] = data
-                new_adds += 1
-                if new_adds % 50 == 0:
-                    print(f"  ... enriched {new_adds} items")
-                    save_tmdb_cache(cache)
+            try:
+                res = future.result()
+                if res:
+                    title, data = res
+                    if data:
+                        with cache_lock:
+                            cache[title] = data
+                        new_adds += 1
+                        if new_adds % 50 == 0:
+                            print(f"  ... enriched {new_adds} items")
+                            save_tmdb_cache(cache)
+            except Exception as e:
+                print(f"  [!] Error processing TMDB result: {e}")
 
     # Assign from cache
     for c in channels:
@@ -191,6 +236,7 @@ def parse_m3u(filename, use_proxy=False):
                 new_lines.append(final_url + "\n")
 
                 channels.append({
+                    "originalName": name,
                     "name": name,
                     "group": group,
                     "tvg_id": tvg_id,
@@ -210,18 +256,30 @@ def parse_m3u(filename, use_proxy=False):
     print(f"  [OK] Found {len(channels)} valid entries in {filename}.")
     return channels
 
-def generate_jsons(channels, subfolder):
+def generate_jsons(channels, subfolder, rules):
     print(f"[*] STEP: Generating JSON files for '{subfolder}'...")
     out_dir = os.path.join(DATA_DIR, subfolder)
     os.makedirs(out_dir, exist_ok=True)
     
-    groups = []
+    # 1. Determine groups and respect groupsOrder from rules
+    groups_raw = []
     seen = set()
     for c in channels:
         if c["group"] not in seen:
-            groups.append(c["group"])
+            groups_raw.append(c["group"])
             seen.add(c["group"])
             
+    # Apply groupsOrder
+    groups_order = rules.get("groupsOrder", [])
+    if groups_order:
+        # Filter groups that exist in current channels and maintain order, 
+        # then append any new groups not in the order list.
+        ordered = [g for g in groups_order if g in groups_raw]
+        remaining = [g for g in groups_raw if g not in ordered]
+        groups = ordered + remaining
+    else:
+        groups = groups_raw
+
     with open(os.path.join(out_dir, "categories.json"), "w", encoding="utf-8") as f:
         json.dump(groups, f, ensure_ascii=False)
         
@@ -322,7 +380,7 @@ def parse_epg():
     print(f"  [OK] EPG processing finished. {len(epg_now)} channels currently on-air.")
     print("EPG chunks and epg_now.json generated.")
 
-def process_playlist(url, name):
+def process_playlist(url, name, rules):
     print(f"[*] START Process Playlist: {name}")
     if url:
         filename = f"{name}.m3u"
@@ -331,10 +389,20 @@ def process_playlist(url, name):
         use_proxy = True # Abilita il proxy per tutti i link, inclusi i canali live
         channels = parse_m3u(filename, use_proxy=use_proxy)
         
+        # Apply the manual rules (renaming, hiding, ordering)
+        channels = apply_rules(channels, rules)
+
+        # 1. First Pass: Generate JSONs with proxied URLs immediately
+        # This ensures we have updated links even if TMDB enrichment fails or is slow
+        generate_jsons(channels, name, rules)
+        
         if name in ["film", "series"] and TMDB_API_KEY:
+            print(f"[*] STEP: Starting TMDB enrichment for {name}...")
             enrich_channels_with_tmdb(channels, is_series=(name=="series"))
+            # 2. Second Pass: Update JSONs with TMDB metadata
+            print(f"[*] STEP: Updating JSONs with metadata for {name}...")
+            generate_jsons(channels, name, rules)
             
-        generate_jsons(channels, name)
         print(f"[*] END Process Playlist: {name}")
     else:
         print(f"Skipping {name}, no URL provided.")
@@ -342,7 +410,12 @@ def process_playlist(url, name):
 def main():
     start_time = time.time()
     print(f"--- LiveTvAPI Parallel Parser Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---")
+    
+    # Load rules once
+    rules = load_rules()
+    
     print(f"DATA_DIR: {DATA_DIR}")
+    print(f"Rules loaded: {len(rules.get('items', {}))} items, {len(rules.get('order', []))} order hints")
     print(f"M3U_LIVE_URL preset: {'YES' if M3U_LIVE_URL else 'NO'}")
     print(f"M3U_FILM_URL preset: {'YES' if M3U_FILM_URL else 'NO'}")
     print(f"M3U_SERIES_URL preset: {'YES' if M3U_SERIES_URL else 'NO'}")
@@ -354,11 +427,11 @@ def main():
     tasks = []
     with ThreadPoolExecutor(max_workers=4) as executor:
         if M3U_LIVE_URL:
-            tasks.append(executor.submit(process_playlist, M3U_LIVE_URL, "live"))
+            tasks.append(executor.submit(process_playlist, M3U_LIVE_URL, "live", rules))
         if M3U_FILM_URL:
-            tasks.append(executor.submit(process_playlist, M3U_FILM_URL, "film"))
+            tasks.append(executor.submit(process_playlist, M3U_FILM_URL, "film", rules))
         if M3U_SERIES_URL:
-            tasks.append(executor.submit(process_playlist, M3U_SERIES_URL, "series"))
+            tasks.append(executor.submit(process_playlist, M3U_SERIES_URL, "series", rules))
         if EPG_URL:
             tasks.append(executor.submit(parse_epg))
 
