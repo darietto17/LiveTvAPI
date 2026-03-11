@@ -137,6 +137,8 @@ https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.t
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F861948627bb3b2465ad5a
 #EXTINF:-1 tvg-id="dazn.1.it.it" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/d/d6/Dazn-logo.png" group-title="Sport",DAZN 1
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F1376440573d46b3d682e20
+#EXTINF:-1 tvg-id="dazn.2.it.it" tvg-logo="" group-title="Sport",DAZN 2
+https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F3635062218e0132c616db
 #EXTINF:-1 tvg-id="deejay.tv.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/deejay-tv-it.png" group-title="Musica",DEEJAY TV (1)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F963607327f90ada131395
 #EXTINF:-1 tvg-id="deejay.tv.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/deejay-tv-it.png" group-title="Musica",DEEJAY TV (2)
@@ -239,8 +241,10 @@ https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.t
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F28977827817ceeecfaf662
 #EXTINF:-1 tvg-id="hgtv.it" tvg-logo="https://d204lf4nuskf6u.cloudfront.net/italy-images/c2cbeaabb81be73e81c7f4291cf798e3.png?k=2nWZhtOSUQdq2s2ItEDH5%2BQEPdq1khUY8YJSK0%2BNV90dhkyaUQQ82V1zGPD7O5%2BS" group-title="Altri",HGTV (2)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F42489970292d2930202d0e
-#EXTINF:-1 tvg-id="history.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/history-channel-it.png" group-title="Documentari",HISTORY
+#EXTINF:-1 tvg-id="history.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/history-channel-it.png" group-title="Documentari",HISTORY (1)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F3178376547e2dcc234152
+#EXTINF:-1 tvg-id="history.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/history-channel-it.png" group-title="Documentari",HISTORY (2)
+https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F2134724757fd92e3286ea6
 #EXTINF:-1 tvg-id="" tvg-logo="https://www.gruppoicaro.it/wp-content/uploads/2020/05/icarotv.png" group-title="Altri",ICARO TV (1)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F24880174054972ad3227fa
 #EXTINF:-1 tvg-id="" tvg-logo="https://www.gruppoicaro.it/wp-content/uploads/2020/05/icarotv.png" group-title="Altri",ICARO TV (2)
@@ -313,6 +317,8 @@ https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.t
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F215827632715f84c8de94
 #EXTINF:-1 tvg-id="" tvg-logo="" group-title="Altri",MARIA+VISION
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F448530931a02141cb37b2
+#EXTINF:-1 tvg-id="" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/20-it.png" group-title="Altri",MEDIASET 20
+https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F313448120145a6443975e1
 #EXTINF:-1 tvg-id="mediaset.extra.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/mediaset-extra-it.png" group-title="Altri",MEDIASET EXTRA
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F4774665319f73c392df0e
 #EXTINF:-1 tvg-id="" tvg-logo="https://www.italiasera.it/wp-content/uploads/2019/06/Mediaset-640x366.png" group-title="Digitale",MEDIASET ITALIA
@@ -331,12 +337,8 @@ https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.t
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F1735702308f63b4637e8ce
 #EXTINF:-1 tvg-id="" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/national-geographic-it.png" group-title="Documentari",NAT GEO (2)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F179844839442a5ed454fe
-#EXTINF:-1 tvg-id="" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/national-geographic-wild-it.png" group-title="Documentari",NAT GEO WILD (1)
+#EXTINF:-1 tvg-id="" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/national-geographic-wild-it.png" group-title="Documentari",NAT GEO WILD
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F3428501495a9ec2ff7bc8e
-#EXTINF:-1 tvg-id="" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/national-geographic-wild-it.png" group-title="Documentari",NAT GEO WILD (2)
-https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F3229664409bbe85d51bba2
-#EXTINF:-1 tvg-id="nickelodeon.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/nickelodeon-it.png" group-title="Altri",NICKELODEON
-https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F30393892159798f5cebb7c
 #EXTINF:-1 tvg-id="nove.it" tvg-logo="" group-title="Intrattenimento",NOVE
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F867216452ba4d42b41ada
 #EXTINF:-1 tvg-id="" tvg-logo="https://pbs.twimg.com/profile_images/570326948497195008/Wf6DPfFP_400x400.jpeg" group-title="Musica",OL3 RADIO
@@ -543,10 +545,8 @@ https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.t
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F352583705711c4cbe44bbb
 #EXTINF:-1 tvg-id="sky.cinema.collection.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-cinema-collection-it.png" group-title="Cinema",SKY CINEMA COLLECTION (D)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D859
-#EXTINF:-1 tvg-id="sky.cinema.comedy.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-cinema-comedy-it.png" group-title="Cinema",SKY CINEMA COMEDY (1)
+#EXTINF:-1 tvg-id="sky.cinema.comedy.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-cinema-comedy-it.png" group-title="Cinema",SKY CINEMA COMEDY
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F500203271d58941028e95
-#EXTINF:-1 tvg-id="sky.cinema.comedy.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-cinema-comedy-it.png" group-title="Cinema",SKY CINEMA COMEDY (2)
-https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F3131104474771735b548ce
 #EXTINF:-1 tvg-id="sky.cinema.comedy.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-cinema-comedy-it.png" group-title="Cinema",SKY CINEMA COMEDY (D)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D862
 #EXTINF:-1 tvg-id="sky.cinema.drama.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-cinema-drama-it.png" group-title="Cinema",SKY CINEMA DRAMA
@@ -643,6 +643,8 @@ https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.t
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F113411388318bf0ef81722
 #EXTINF:-1 tvg-id="" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-primafila-it.png" group-title="Cinema",SKY PRIMAFILA 9 (2)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F17532606771304e2497369
+#EXTINF:-1 tvg-id="" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-primafila-it.png" group-title="Cinema",SKY PRIMAFILA 9 (2)
+https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F17532606771304e2497369
 #EXTINF:-1 tvg-id="sky.serie.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-serie-it.png" group-title="Cinema",SKY SERIE
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F83668011205f936fa3b65
 #EXTINF:-1 tvg-id="sky.serie.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-serie-it.png" group-title="Cinema",SKY SERIE (D)
@@ -693,8 +695,10 @@ https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.t
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F2090703806f47d7eb551ce
 #EXTINF:-1 tvg-id="sky.sport.motogp.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/italy/hd/sky-sport-motogp-hd-it.png" group-title="Sport",SKY SPORT MOTOGP (D)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D575
-#EXTINF:-1 tvg-id="sky.sport.nba.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-sport-nba-it.png" group-title="Sport",SKY SPORT NBA
+#EXTINF:-1 tvg-id="sky.sport.nba.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-sport-nba-it.png" group-title="Sport",SKY SPORT NBA (1)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F271195962000118dca31ce
+#EXTINF:-1 tvg-id="sky.sport.nba.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-sport-nba-it.png" group-title="Sport",SKY SPORT NBA (2)
+https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F3268253262aec282eb346
 #EXTINF:-1 tvg-id="sky.sport.tennis.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-sport-tennis-it.png" group-title="Sport",SKY SPORT TENNIS (1)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F210077178262e76f204fa6
 #EXTINF:-1 tvg-id="sky.sport.tennis.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/sky-sport-tennis-it.png" group-title="Sport",SKY SPORT TENNIS (2)
@@ -851,18 +855,14 @@ https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.t
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F3420407456fb80f4ceda0b
 
 # MUSICA
-#EXTINF:-1 tvg-id="" tvg-logo="https://www.trentinotv.it/images/resource/logo-trentino.png" group-title="Altri",TRENTINO TV
-https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F2764553737f817b6d4f583
 #EXTINF:-1 tvg-id="" tvg-logo="https://teleromagna.it/Images/logo-tr-sport.jpg" group-title="Sport",TRSPORT
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F3613140620a139097e4b5
 
 # DOCUMENTARI
 #EXTINF:-1 tvg-id="tv2000.it" tvg-logo="https://upload.wikimedia.org/wikipedia/it/0/0d/Logo_di_TV2000.png" group-title="Altri",TV 2000
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F1949044924a6c217960c23
-#EXTINF:-1 tvg-id="tv8.hd.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/tv8-it.png" group-title="Altri",TV 8 (1)
+#EXTINF:-1 tvg-id="tv8.hd.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/tv8-it.png" group-title="Altri",TV 8
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F40383657201f43ce81681d
-#EXTINF:-1 tvg-id="tv8.hd.it" tvg-logo="https://raw.githubusercontent.com/tv-logo/tv-logos/main/countries/italy/tv8-it.png" group-title="Altri",TV 8 (2)
-https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F2706291008928411daf9bb
 #EXTINF:-1 tvg-id="" tvg-logo="" group-title="Altri",TV LUNA
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.to%2Fvavoo-iptv%2Fplay%2F37897066429b9ef63bb97c
 #EXTINF:-1 tvg-id="" tvg-logo="https://www.tvdream.net/img/tvqui-modena-cover.jpg" group-title="Altri",TV QUI
@@ -911,28 +911,28 @@ https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fvavoo.t
 #EXTINF:-1 tvg-name="DADDYLIVE" group-title="Eventi Live",DADDYLIVE
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fexample.com.m3u8
 
-#EXTINF:-1 tvg-id="italycoppaitaliawomenfiorentinavsjuventus" tvg-name="Soccer | Italy Coppa Italia, Women : Fiorentina vs Juventus (19:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/Fiorentina_vs_Juventus.png" group-title="Digitale",Soccer | Italy Coppa Italia, Women : Fiorentina vs Juventus (19:00)
+#EXTINF:-1 tvg-id="italycoppaitaliawomenfiorentinavsjuventus" tvg-name="All Soccer Events | Italy Coppa Italia, Women : Fiorentina vs Juventus (19:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/Fiorentina_vs_Juventus.png" group-title="Digitale",All Soccer Events | Italy Coppa Italia, Women : Fiorentina vs Juventus (19:00)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D870
 
-#EXTINF:-1 tvg-id="europeuefachampionsleaguebayerleverkusenvsarsenal" tvg-name="Soccer | Europe - UEFA Champions League : Bayer Leverkusen vs Arsenal (19:45)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/Bayer Leverkusen_vs_Arsenal.png" group-title="Sport",Soccer | Europe - UEFA Champions League : Bayer Leverkusen vs Arsenal (19:45)
+#EXTINF:-1 tvg-id="europeuefachampionsleaguebayerleverkusenvsarsenal" tvg-name="All Soccer Events | Europe - UEFA Champions League : Bayer Leverkusen vs Arsenal (19:45)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/Bayer Leverkusen_vs_Arsenal.png" group-title="Sport",All Soccer Events | Europe - UEFA Champions League : Bayer Leverkusen vs Arsenal (19:45)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D7
 
-#EXTINF:-1 tvg-id="europeuefachampionsleaguebayerleverkusenvsarsenal" tvg-name="Soccer | Europe - UEFA Champions League : Bayer Leverkusen vs Arsenal (19:45)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/Bayer Leverkusen_vs_Arsenal.png" group-title="Sport",Soccer | Europe - UEFA Champions League : Bayer Leverkusen vs Arsenal (19:45)
+#EXTINF:-1 tvg-id="europeuefachampionsleaguebayerleverkusenvsarsenal" tvg-name="All Soccer Events | Europe - UEFA Champions League : Bayer Leverkusen vs Arsenal (19:45)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/Bayer Leverkusen_vs_Arsenal.png" group-title="Sport",All Soccer Events | Europe - UEFA Champions League : Bayer Leverkusen vs Arsenal (19:45)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D461
 
-#EXTINF:-1 tvg-id="europeuefachampionsleaguerealmadridvsmanchestercity" tvg-name="Soccer | Europe - UEFA Champions League : Real Madrid vs Manchester City (22:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/Real Madrid_vs_Manchester City.png" group-title="Sport",Soccer | Europe - UEFA Champions League : Real Madrid vs Manchester City (22:00)
+#EXTINF:-1 tvg-id="europeuefachampionsleaguerealmadridvsmanchestercity" tvg-name="All Soccer Events | Europe - UEFA Champions League : Real Madrid vs Manchester City (22:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/Real Madrid_vs_Manchester City.png" group-title="Sport",All Soccer Events | Europe - UEFA Champions League : Real Madrid vs Manchester City (22:00)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D7
 
-#EXTINF:-1 tvg-id="europeuefachampionsleaguepsgvschelsea" tvg-name="Soccer | Europe - UEFA Champions League : PSG vs Chelsea (22:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/PSG_vs_Chelsea.png" group-title="Sport",Soccer | Europe - UEFA Champions League : PSG vs Chelsea (22:00)
+#EXTINF:-1 tvg-id="europeuefachampionsleaguepsgvschelsea" tvg-name="All Soccer Events | Europe - UEFA Champions League : PSG vs Chelsea (22:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/PSG_vs_Chelsea.png" group-title="Sport",All Soccer Events | Europe - UEFA Champions League : PSG vs Chelsea (22:00)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D1
 
-#EXTINF:-1 tvg-id="europeuefachampionsleaguepsgvschelsea" tvg-name="Soccer | Europe - UEFA Champions League : PSG vs Chelsea (22:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/PSG_vs_Chelsea.png" group-title="Sport",Soccer | Europe - UEFA Champions League : PSG vs Chelsea (22:00)
+#EXTINF:-1 tvg-id="europeuefachampionsleaguepsgvschelsea" tvg-name="All Soccer Events | Europe - UEFA Champions League : PSG vs Chelsea (22:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/PSG_vs_Chelsea.png" group-title="Sport",All Soccer Events | Europe - UEFA Champions League : PSG vs Chelsea (22:00)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D15
 
-#EXTINF:-1 tvg-id="europeuefachampionsleaguepsgvschelsea" tvg-name="Soccer | Europe - UEFA Champions League : PSG vs Chelsea (22:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/PSG_vs_Chelsea.png" group-title="Sport",Soccer | Europe - UEFA Champions League : PSG vs Chelsea (22:00)
+#EXTINF:-1 tvg-id="europeuefachampionsleaguepsgvschelsea" tvg-name="All Soccer Events | Europe - UEFA Champions League : PSG vs Chelsea (22:00)" tvg-logo="https://raw.githubusercontent.com/darietto17/TV/main/logos/PSG_vs_Chelsea.png" group-title="Sport",All Soccer Events | Europe - UEFA Champions League : PSG vs Chelsea (22:00)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D870
 
-#EXTINF:-1 tvg-id="europeuefachampionsleaguebodøglimtvssportingcp" tvg-name="Soccer | Europe - UEFA Champions League : Bodø / Glimt vs Sporting CP (22:00)" tvg-logo="https://glimt-i05.mycdn.no/mysimgprod/glimt_mystore_no/images/5AXVc_Glimt-pin_1.png/w799h800.png" group-title="Sport",Soccer | Europe - UEFA Champions League : Bodø / Glimt vs Sporting CP (22:00)
+#EXTINF:-1 tvg-id="europeuefachampionsleaguebodøglimtvssportingcp" tvg-name="All Soccer Events | Europe - UEFA Champions League : Bodø / Glimt vs Sporting CP (22:00)" tvg-logo="https://glimt-i05.mycdn.no/mysimgprod/glimt_mystore_no/images/5AXVc_Glimt-pin_1.png/w799h800.png" group-title="Sport",All Soccer Events | Europe - UEFA Champions League : Bodø / Glimt vs Sporting CP (22:00)
 https://eproxy.rrinformatica.cloud/proxy/manifest.m3u8?url=https%3A%2F%2Fdlhd.dad%2Fwatch.php%3Fid%3D19
 
 #EXTINF:-1 tvg-id="atpwta1000indianwells" tvg-name="Tennis | ATP/WTA 1000: Indian Wells (20:00)" tvg-logo="https://nordsip.com/wp-content/uploads/2024/10/Logo-black-1000.png" group-title="Eventi Live",Tennis | ATP/WTA 1000: Indian Wells (20:00)
