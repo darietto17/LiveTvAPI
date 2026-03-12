@@ -7,9 +7,32 @@ from datetime import datetime
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import gzip
 
 # Global lock for thread-safe cache access
 cache_lock = threading.Lock()
+
+# Load User Rules for server-side transformation
+USER_RULES = {}
+try:
+    if os.path.exists("user_rules.json"):
+        with open("user_rules.json", "r", encoding="utf-8") as f:
+            rules_data = json.load(f)
+            USER_RULES = rules_data.get("items", {})
+            print(f"[*] Loaded {len(USER_RULES)} user rules for transformation.")
+except Exception as e:
+    print(f"[!] Error loading user_rules.json: {e}")
+
+def apply_user_rules(item):
+    """Applies server-side transformations based on user_rules.json"""
+    rule = USER_RULES.get(item["name"])
+    if rule:
+        if rule.get("hidden"):
+            return None
+        item["name"] = rule.get("name") or item["name"]
+        item["group"] = rule.get("group") or item["group"]
+        item["logo"] = rule.get("logo") or item["logo"]
+    return item
 
 M3U_LIVE_URL = os.environ.get("M3U_LIVE_URL", "")
 M3U_FILM_URL = os.environ.get("M3U_FILM_URL", "")
@@ -227,7 +250,9 @@ def generate_jsons(channels, subfolder):
         
     by_category = {}
     for c in channels:
-        by_category.setdefault(c["group"], []).append(c)
+        transformed = apply_user_rules(c)
+        if transformed:
+            by_category.setdefault(transformed["group"], []).append(transformed)
         
     for group, items in by_category.items():
         safe_name = "".join(x if x.isalnum() else "_" for x in group)
@@ -248,6 +273,15 @@ def generate_jsons(channels, subfolder):
         
     with open(os.path.join(out_dir, "channels.json"), "w", encoding="utf-8") as f:
         json.dump(search_db, f, separators=(',', ':'), ensure_ascii=False)
+        
+    # Gzip all generated JSON files for optimization
+    for root, dirs, files in os.walk(out_dir):
+        for file in files:
+            if file.endswith(".json") and not file.endswith(".gz"):
+                file_path = os.path.join(root, file)
+                with open(file_path, 'rb') as f_in:
+                    with gzip.open(file_path + ".gz", 'wb') as f_out:
+                        f_out.writelines(f_in)
         
     print(f"{subfolder} JSON chunks generated.")
 
