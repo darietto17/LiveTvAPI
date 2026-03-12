@@ -7,6 +7,7 @@ from datetime import datetime
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import gzip
 
 # Global lock for thread-safe cache access
 cache_lock = threading.Lock()
@@ -307,6 +308,10 @@ def generate_jsons(channels, subfolder, rules):
         search_db.append(item)
         
     with open(os.path.join(out_dir, "channels.json"), "w", encoding="utf-8") as f:
+        json.dump(search_db, f, separators=(',', ':'), ensure_ascii=False)
+        
+    # Also save as .gz to bypass Google Apps Script 50MB limit
+    with gzip.open(os.path.join(out_dir, "channels.json.gz"), "wt", encoding="utf-8") as f:
         json.dump(search_db, f, separators=(',', ':'), ensure_ascii=False)
         
     print(f"{subfolder} JSON chunks generated.")
