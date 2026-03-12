@@ -16,6 +16,8 @@ M3U_FILM_URL = os.environ.get("M3U_FILM_URL", "")
 M3U_SERIES_URL = os.environ.get("M3U_SERIES_URL", "")
 EPG_URL = os.environ.get("EPG_URL", "")
 TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "")
+PROXY_URL = "https://script.google.com/macros/s/AKfycbybNHpTwVofPgSEg2I433cDmHbB7Nl1azrA5Xtt1OWPSaeXJkoRZl3pU0LFSiof49U_/exec"
+NOMEREPO = os.environ.get("NOMEREPO", "LiveTvAPI") # Default or from env
 
 # Global session for connection pooling
 session = requests.Session()
@@ -316,6 +318,9 @@ def parse_epg():
         return
         
     epg_file = "epg.xml"
+    # Note: download_file uses session.get(url). If EPG_URL is a private raw github link, 
+    # it needs a token or be accessed via proxy.
+    # Assuming EPG_URL is provided correctly with token if needed or points to proxy.
     download_file(EPG_URL, epg_file)
     
     epg_dir = os.path.join(DATA_DIR, "epg")
